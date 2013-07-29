@@ -8,12 +8,12 @@ This generator use Grunt, AngularJS, RequireJS and jQuery.
 Add it as a bower component.
 
 ```sh
-bower install git://github.com/angular-ui/angular-ui-docs.git
+bower install git://github.com/douglasduteil/angular-ui-docs.git
 ```
 or add to your `bower.json`
 ```Javascript
   "devDependencies": {
-    "angular-ui-docs": "angular-ui/angular-ui-docs"
+    "angular-ui-docs": "douglasduteil/angular-ui-docs"
   }
 ```
 
