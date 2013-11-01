@@ -1,0 +1,17 @@
+{
+  "name": "angular-ui-docs",
+  "version": "0.0.0",
+  "description": "Doc generator of Angular-ui modules.",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/douglasduteil/angular-ui-docs.git"
+  },
+  "author": "Douglas Duteil <douglasduteil@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/douglasduteil/angular-ui-docs/issues"
+  }
+}
