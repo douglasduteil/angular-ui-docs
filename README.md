@@ -1,4 +1,4 @@
-# Angular UI Docs
+# Angular UI Docs [![Build Status](https://travis-ci.org/douglasduteil/angular-ui-docs.png)](https://travis-ci.org/douglasduteil/angular-ui-docs)
 Doc generator of Angular-ui modules. 
 
 This generator use Grunt, AngularJS, RequireJS and jQuery.

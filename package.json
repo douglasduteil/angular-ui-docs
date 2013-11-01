@@ -13,5 +13,16 @@
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/douglasduteil/angular-ui-docs/issues"
+  },
+  "peerDependencies": {
+    "grunt": "~0.4.0"
+  },
+  "devDependencies": {
+    "grunt-contrib-jshint": "~0.7.1"
+  },
+  "dependencies": {
+    "grunt-contrib-copy": "~0.4.1",
+    "grunt-gh-pages": "~0.8.1",
+    "shelljs": "~0.2.6"
   }
 }
