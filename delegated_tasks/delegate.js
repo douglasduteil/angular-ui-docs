@@ -23,7 +23,7 @@ module.exports = function (grunt) {
     child.stderr.on('data', grunt.log.write);
     child.on('exit', function (code) {
       if (code !== 0) {
-        grunt.log.error(f('Exited with code: ' + code));
+        grunt.log.error('Exited with code: ' + code);
         return callback(false);
       }
 
@@ -33,7 +33,9 @@ module.exports = function (grunt) {
 
   function initThenRun(cmd, callback) {
 
-    shell('npm install', function () {
+    grunt.log.subhead("npm install...");
+
+    shell('npm install -q', function () {
       var verboseMode = grunt.option('verbose') ? ' -v' : '';
       shell(cmd + verboseMode, callback);
     });

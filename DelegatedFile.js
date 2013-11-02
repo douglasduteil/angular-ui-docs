@@ -1,5 +1,5 @@
 /*
- * DelegatedFile
+ * Git Publisher
  * ===========
  *
  * Copyright (c) 2013 Douglas Duteil
@@ -23,6 +23,11 @@ module.exports = function (grunt) {
     return;
   }
   var config = require('../../delegatedConfig.js')(grunt);
+  var allowPushOnRepo = (process.env.TRAVIS == 'true') && (process.env.TRAVIS_PULL_REQUEST == 'false') && (process.env.TRAVIS_BRANCH == 'develop') && true;
+
+  if (allowPushOnRepo){
+    grunt.log.subhead("MAIN TRAVIS BRANCH DETECTED !");
+  }
 
   grunt.verbose.writeflags(config, 'Config');
 
@@ -49,31 +54,25 @@ module.exports = function (grunt) {
       }
     },
 
-    'gh-pages': {
+    'gitpublisher': {
       'doc': {
         options: {
-          base: '<%= dist %>',
+          push: true,
           branch: 'gh-pages-test',
-          add: true,
-          message: 'Travis commit : build $TRAVIS_BUILD_NUMBER',
-          user: {
-            name: 'X (via TravisCI)',
-            email: 'x@googlegroups.com'
-          }
+          message: 'Travis commit : build ' + process.env.TRAVIS_BUILD_NUMBER,
+          repo :  process.env.REPO || false
         },
-        src: [ '**/*', '!node_modules/**' ]
+        src: [
+          '<%= dist %>/index.html']
       },
       'bower': {
         options: {
+          push: allowPushOnRepo,
           base: '<%= dist %>/dist/js',
           branch: 'bower-test',
-          add: true,
           tag: 'v<%= pkg.version %>',
-          message: 'Travis commit : build $TRAVIS_BUILD_NUMBER',
-          user: {
-            name: 'X (via TravisCI)',
-            email: 'x@googlegroups.com'
-          }
+          message: 'Travis commit : build ' + process.env.TRAVIS_BUILD_NUMBER,
+          repo :  process.env.REPO || false
         },
         src: ['**/*']
       }
@@ -85,10 +84,11 @@ module.exports = function (grunt) {
 
   //TODO CHANGE BAD MANUAL LINKING...
   grunt.loadTasks(rrr + '/node_modules/grunt-contrib-copy/tasks');
+  grunt.loadTasks(rrr + '/.tasks');
 
   grunt.registerTask('doc-building', ['copy:template']);
 
-  grunt.registerTask('doc-publishing', ['doc-building', 'gh-pages:doc']);
+  grunt.registerTask('doc-publishing', ['doc-building', 'gitpublisher:doc']);
   grunt.registerTask('bower-publishing', []);// COMING SOON
 
 
