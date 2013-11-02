@@ -24,7 +24,7 @@ module.exports = function (grunt) {
     child.on('exit', function (code) {
       if (code !== 0) {
         grunt.log.error('Exited with code: ' + code);
-        return callback(false);
+        return callback(true);
       }
 
       return callback();
@@ -46,9 +46,13 @@ module.exports = function (grunt) {
     if (task) {
       grunt.log.subhead('==================\n\n' + task + ' delegated !');
 
-      initThenRun('grunt --gruntfile=DelegatedFile.js ' + task, function () {
-        grunt.log.ok('Delegated grunt work done !');
-        grunt.log.subhead('==================');
+      initThenRun('grunt --gruntfile=DelegatedFile.js ' + task, function (fail) {
+        if (fail){
+          grunt.fail('Delegated grunt work done !');
+        } else{
+          grunt.log.ok('Delegated grunt work done !');
+          grunt.log.subhead('==================');
+        }
         done();
       });
     } else {

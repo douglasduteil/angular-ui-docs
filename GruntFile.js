@@ -1,4 +1,4 @@
-/** @param {Object} grrunt Grunt. */
+/** @param {Object} grunt Grunt. */
 module.exports = function (grunt) {
 
   grunt.initConfig({

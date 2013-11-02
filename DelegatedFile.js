@@ -1,5 +1,5 @@
 /*
- * Git Publisher
+ * DelegatedFile
  * ===========
  *
  * Copyright (c) 2013 Douglas Duteil
@@ -15,6 +15,8 @@ module.exports = function (grunt) {
   var rrr = "./bower_components/angular-ui-docs";
 
   var _ = grunt.util._;
+  var gtp = grunt.template.process;
+  var sh = require('shelljs');
 
 
   //TODO CHANGE REALLY NOT PRETTY WAY TO PICK IT...
@@ -36,12 +38,13 @@ module.exports = function (grunt) {
     dist: '<%= bower %>/angular-ui-docs',
     pkg: grunt.file.readJSON('package.json'),
 
+    //TODO CHANGE REALLY NOT PRETTY WAY TO PICK IT...
+    'MASTER_BRANCH' : "develop",
+
 
     copy: {
       template: {
-        options: {processContent: function (content) {
-          return grunt.template.process(content);
-        }},
+        options: {processContent: gtp},
         files: [
           {src: ['<%= meta.view.repoName %>.js'], dest: '<%= dist %>/dist/js/<%= meta.view.repoName %>.js', filter: 'isFile'},
           {src: ['<%= dist %>/.tmpl/index.tmpl'], dest: '<%= dist %>/index.html'},
@@ -51,29 +54,59 @@ module.exports = function (grunt) {
             _.map(config.js_dependencies.concat(config.css_dependencies), function (f) {
               return {src: [f], dest: '<%= dist %>/' + f, filter: 'isFile'};
             }))
+      },
+      bowerfile: {
+        options: {processContent: function (content) {
+          grunt.config('bwr', _.extend(grunt.file.readJSON('bower.json'), { name: "angular-ui-codemirror" }));
+          return gtp(content);
+        }},
+        files: [
+          {src: ['<%= dist %>/.tmpl/bower.tmpl'], dest: '<%= dist %>/dist/js/bower.json'},
+          {src: ['<%= dist %>/.tmpl/.travis.yml.tmpl'], dest: '<%= dist %>/dist/js/.travis.yml'}
+        ]
+      },
+      ghpagetravi:{
+        options: {processContent: gtp},
+        files: [
+          {src: ['<%= dist %>/.tmpl/.travis.yml.tmpl'], dest: '<%= dist %>/.travis.yml'}
+        ]
       }
     },
 
-    'gitpublisher': {
-      'doc': {
+    iftrue: {
+      'new-release': {
+        test: function () {
+          cmd = gtp("git ls-remote --tags --exit-code origin v<%= pkg.version %>");
+          grunt.verbose.writeln('$', cmd.cyan);
+          return sh.exec(cmd).code > 0;
+        },
+        trueMessage: "New release v<%= pkg.version %>.",
+        falseMessage: "Release v<%= pkg.version %> detected.",
+        tasks: ['copy:bowerfile', 'gitpublisher:bower']
+      }
+    },
+
+    gitpublisher: {
+      doc: {
         options: {
-          push: true,
+          push: allowPushOnRepo,
           branch: 'gh-pages-test',
           message: 'Travis commit : build ' + process.env.TRAVIS_BUILD_NUMBER,
           repo :  process.env.REPO || false
         },
+        cwd: "<%= dist %>",
         src: [
-          '<%= dist %>/index.html']
+          'index.html', '.travis.yml']
       },
-      'bower': {
+      bower: {
         options: {
           push: allowPushOnRepo,
-          base: '<%= dist %>/dist/js',
           branch: 'bower-test',
           tag: 'v<%= pkg.version %>',
-          message: 'Travis commit : build ' + process.env.TRAVIS_BUILD_NUMBER,
+          message: 'v<%= pkg.version %> (bower-test-branch, build ' + process.env.TRAVIS_BUILD_NUMBER + ')',
           repo :  process.env.REPO || false
         },
+        cwd: "<%= dist %>/dist/js",
         src: ['**/*']
       }
     }
@@ -88,8 +121,8 @@ module.exports = function (grunt) {
 
   grunt.registerTask('doc-building', ['copy:template']);
 
-  grunt.registerTask('doc-publishing', ['doc-building', 'gitpublisher:doc']);
-  grunt.registerTask('bower-publishing', []);// COMING SOON
+  grunt.registerTask('doc-publishing', ['doc-building', 'copy:ghpagetravi','gitpublisher:doc']);
+  grunt.registerTask('bower-publishing', ['iftrue:new-release']);
 
 
   grunt.initConfig(opts);

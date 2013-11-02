@@ -2,7 +2,7 @@
  * Git publisher task
  * ==================
  *
- * Inspired by https://github.com/tschaub/grunt-gh-page
+ * Inspired by https://github.com/tschaub/grunt-gh-pages
  *
  * Copyright (c) 2013 Douglas Duteil
  * Licensed under the MIT license.
@@ -24,7 +24,7 @@ module.exports = function (grunt) {
     var defaults = {
       add: false,
       git: 'git',
-      cloneLocation: path.join(sh.tempdir(), this.name, this.target),
+      cloneLocation: path.join(process.env.HOME, 'tmp', this.name, this.target),
       branch: 'gh-pages',
       remote: 'origin',
       base: process.cwd(),
@@ -45,25 +45,30 @@ module.exports = function (grunt) {
     }
 
     if (!grunt.file.isDir(options.base)) {
-      grunt.fatal(new Error('The "base" option must be an existing directory'));
+      grunt.fatal('The "base" option must be an existing directory');
     }
 
     if (!Array.isArray(this.files) || this.files.length === 0) {
-      grunt.fatal(new Error('Files must be provided in the "src" property.'));
+      grunt.fatal('Files must be provided in the "src" property.');
     }
 
 
     var res;
 
     // Get the remote.origin.url
-    res = e("<%= git %> config --get remote.origin.url");
+    res = e("<%= git %> config --get remote.origin.url 2>&1 >/dev/null");
     if (res.code > 0) {
-      grunt.fatal(new Error("Can't get no remote.origin.url !"));
+      grunt.log.debug(res.output);
+      grunt.fatal("Can't get no remote.origin.url !");
     }
-    options.repoUrl = String(res.output).split(/[\n\r]/).shift();
+    options.repoUrl =  process.env.REPO || String(res.output).split(/[\n\r]/).shift();
+    if (!options.repoUrl) {
+      grunt.fatal('No repo link !');
+    }
     grunt.verbose.writeln("Repo link :", options.repoUrl.cyan);
 
 
+    grunt.verbose.writeln();
     // Remove tmp file
     if (grunt.file.isDir(options.cloneLocation)) {
       e("rm -rf <%= cloneLocation %>");
@@ -75,19 +80,18 @@ module.exports = function (grunt) {
       // try again without banch options
       res = e("<%= git %> clone <%= repoUrl %> <%= cloneLocation %>");
       if (res.code > 0) {
-        grunt.fatal(new Error("Can't clone !"));
+        grunt.log.debug(res.output);
+        grunt.fatal("Can't clone !");
       }
     }
 
 
-    // Clean cloneLocation
-    if (grunt.file.isDir(options.cloneLocation)) {
-      e("mkdir -p <%= cloneLocation %>");
-    }
-    e("cd <%= cloneLocation %>");
+    grunt.verbose.writeln();
+    // Go to the cloneLocation
+    sh.cd(options.cloneLocation);
 
     if (sh.pwd() !== options.cloneLocation) {
-      grunt.fatal(new Error("No cd SiDy ! "));
+      grunt.fatal("Can't access to the clone location : " + options.cloneLocation);
     }
 
     e("<%= git %> clean -f -d");
@@ -99,7 +103,8 @@ module.exports = function (grunt) {
       // branch doesn't exist, create an orphan
       res = e("<%= git %> checkout --orphan <%= branch %>");
       if (res.code > 0) {
-        grunt.fatal(new Error("Can't clone !"));
+        grunt.log.debug(res.output);
+        grunt.fatal("Can't clone !");
       }
     } else {
       // branch exists on remote, hard reset
@@ -109,35 +114,74 @@ module.exports = function (grunt) {
 
     if (!options.add) {
       // Empty the clone
-      e("<%= git %> rm --ignore-unmatch -r -f *");
+      e("<%= git %> ls-files -z | xargs -0 <%= git %> rm --ignore-unmatch -rfq");
+      //e("<%= git %> rm --ignore-unmatch -rfq .[^.]* *");
     }
 
 
+    grunt.verbose.writeln();
+    // Copie the targeted files
+    var tally = {
+      dirs: 0,
+      files: 0
+    };
     this.files.forEach(function (filePair) {
+      filePair.src.forEach(function (filesrc) {
+        var src = path.resolve(options.base, filePair.cwd, filesrc);
+        var dest = path.join(options.cloneLocation, filesrc);
 
+        if (grunt.file.isDir(src)) {
+          grunt.verbose.writeln('Creating ' + dest.cyan);
+          sh.mkdir(dest);
+          tally.dirs++;
+        } else {
+          grunt.verbose.writeln('Copying ' + src.cyan + ' -> ' + dest.cyan);
+          sh.cp('-f', src, dest);
+          tally.files++;
+        }
 
-      grunt.log.writeln("src", src.cyan);
-      grunt.log.writeln("relative", relative.cyan);
-      grunt.log.writeln("target", target.cyan);
-      /*
-       filePair.src.forEach(function (src) {
-
-       var rel_src = filePair.cwd + '/' + src;
-       var rel_dest = clonedRepoLocation + '/' + src;
-       if (grunt.file.isDir(rel_src)) {
-       grunt.verbose.writeln('Creating ' + rel_dest.cyan);
-       sh.mkdir('-p', rel_dest);
-       } else {
-       grunt.verbose.writeln('Creating ' + rel_dest.cyan);
-       sh.cp('-f', rel_src, rel_dest);
-       }
-
-       });
-       */
+      });
     });
 
+    if (tally.dirs) {
+      grunt.log.write('Created ' + tally.dirs.toString().cyan + ' directories');
+    }
 
+    if (tally.files) {
+      grunt.log.write((tally.dirs ? ', copied ' : 'Copied ') + tally.files.toString().cyan + ' files');
+    }
     grunt.log.writeln();
+
+
+    grunt.verbose.writeln();
+    // Add and commit all the files
+    e("<%= git %> add .");
+    res = e("<%= git %> commit -m '<%= message%>'");
+
+
+    grunt.verbose.writeln();
+    // Add new tack if not exits
+    if (options.tag) {
+      res = e("<%= git %> tag <%= tag %>");
+      if (res.code > 0) {
+        grunt.log.debug(res.output);
+        grunt.log.error("Can't tag failed, continuing !");
+      }
+    }
+
+
+    // grunt.verbose.writeln();
+    // Push :)
+    if (options.push) {
+      e("<%= git %> push --tags <%= remote %> <%= branch %>");
+    }
+
+
+    // Clean up the clone location
+    if (grunt.file.isDir(options.cloneLocation)) {
+      e("rm -rf <%= cloneLocation %>");
+    }
+
   });
 
 };
