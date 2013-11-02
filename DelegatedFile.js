@@ -77,7 +77,7 @@ module.exports = function (grunt) {
       'new-release': {
         test: function () {
           cmd = gtp("git ls-remote --tags --exit-code origin v<%= pkg.version %>");
-          grunt.verbose.writeln('$', cmd.cyan);
+          grunt.log.writeln('$', cmd.cyan);
           return sh.exec(cmd).code > 0;
         },
         trueMessage: "New release v<%= pkg.version %>.",
@@ -107,7 +107,7 @@ module.exports = function (grunt) {
           repo :  process.env.REPO || false
         },
         cwd: "<%= dist %>/dist/js",
-        src: ['**/*']
+        src: ['**/*', '.travis.yml']
       }
     }
   };
