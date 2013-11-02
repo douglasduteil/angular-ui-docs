@@ -33,6 +33,11 @@ module.exports = function (grunt) {
       message: 'Updates'
     };
 
+    var filecwd = this.files[0].cwd;
+    grunt.verbose.writeln("File cwd: " + filecwd);
+    var files = this.filesSrc;
+    grunt.verbose.writeflags(files, "Files Src");
+
     // override defaults with any task options
     var options = this.options(defaults);
     grunt.verbose.writeflags(options, 'Options');
@@ -61,7 +66,7 @@ module.exports = function (grunt) {
       grunt.log.debug(res.output);
       grunt.fatal("Can't get no remote.origin.url !");
     }
-    options.repoUrl =  process.env.REPO || String(res.output).split(/[\n\r]/).shift();
+    options.repoUrl = process.env.REPO || String(res.output).split(/[\n\r]/).shift();
     if (!options.repoUrl) {
       grunt.fatal('No repo link !');
     }
@@ -121,26 +126,20 @@ module.exports = function (grunt) {
 
     // Copie the targeted files
     grunt.verbose.writeln();
-    var tally = {
-      dirs: 0,
-      files: 0
-    };
-    this.files.forEach(function (filePair) {
-      filePair.src.forEach(function (filesrc) {
-        var src = path.resolve(options.base, filePair.cwd, filesrc);
-        var dest = path.join(options.cloneLocation, filesrc);
+    var src, dest, tally = { dirs: 0, files: 0 };
+    files.forEach(function (filesrc) {
+      src = path.resolve(options.base, filecwd, filesrc);
+      dest = path.join(options.cloneLocation, filesrc);
 
-        if (grunt.file.isDir(src)) {
-          grunt.verbose.writeln('Creating ' + dest.cyan);
-          sh.mkdir(dest);
-          tally.dirs++;
-        } else {
-          grunt.verbose.writeln('Copying ' + src.cyan + ' -> ' + dest.cyan);
-          sh.cp('-f', src, dest);
-          tally.files++;
-        }
-
-      });
+      if (grunt.file.isDir(src)) {
+        grunt.verbose.writeln('Creating ' + dest.cyan);
+        sh.mkdir(dest);
+        tally.dirs++;
+      } else {
+        grunt.verbose.writeln('Copying ' + src.cyan + ' -> ' + dest.cyan);
+        sh.cp('-f', src, dest);
+        tally.files++;
+      }
     });
 
     if (tally.dirs) {
