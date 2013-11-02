@@ -115,8 +115,7 @@ module.exports = function (grunt) {
 
     if (!options.add) {
       // Empty the clone
-      e("<%= git %> ls-files -z | xargs -0 <%= git %> rm --ignore-unmatch -rfq");
-      //e("<%= git %> rm --ignore-unmatch -rfq .[^.]* *");
+      e("<%= git %> rm --ignore-unmatch -rfq '\\.[^\\.]*' *");
     }
 
 
