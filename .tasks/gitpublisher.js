@@ -68,8 +68,8 @@ module.exports = function (grunt) {
     grunt.verbose.writeln("Repo link :", options.repoUrl.cyan);
 
 
-    grunt.verbose.writeln();
     // Remove tmp file
+    grunt.verbose.writeln();
     if (grunt.file.isDir(options.cloneLocation)) {
       e("rm -rf <%= cloneLocation %>");
     }
@@ -86,8 +86,8 @@ module.exports = function (grunt) {
     }
 
 
-    grunt.verbose.writeln();
     // Go to the cloneLocation
+    grunt.verbose.writeln();
     sh.cd(options.cloneLocation);
 
     if (sh.pwd() !== options.cloneLocation) {
@@ -112,6 +112,7 @@ module.exports = function (grunt) {
 
     }
 
+
     if (!options.add) {
       // Empty the clone
       e("<%= git %> ls-files -z | xargs -0 <%= git %> rm --ignore-unmatch -rfq");
@@ -119,8 +120,8 @@ module.exports = function (grunt) {
     }
 
 
-    grunt.verbose.writeln();
     // Copie the targeted files
+    grunt.verbose.writeln();
     var tally = {
       dirs: 0,
       files: 0
@@ -153,8 +154,8 @@ module.exports = function (grunt) {
     grunt.log.writeln();
 
 
-    grunt.verbose.writeln();
     // Add and commit all the files
+    grunt.verbose.writeln();
     e("<%= git %> add .");
     res = e("<%= git %> commit -m '<%= message%>'");
 
