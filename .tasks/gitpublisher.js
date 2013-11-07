@@ -181,6 +181,8 @@ module.exports = function (grunt) {
       e("rm -rf <%= cloneLocation %>");
     }
 
+    // Back to the main thing
+    sh.cd(options.base);
   });
 
 };
