@@ -13,7 +13,7 @@ module.exports = function (grunt) {
 
   // REQUIRED
 
-  var __ = grunt.template.process;
+  var f = grunt.template.process;
 
 
   grunt.registerMultiTask('iftrue', 'run task list if test true', function () {
@@ -21,20 +21,17 @@ module.exports = function (grunt) {
 
     var data = grunt.util._.extend({
       test: false,
-      tasks: [],
       trueMessage: this.name + " true",
       falseMessage: this.name + " false"
     }, this.data);
     grunt.verbose.writeflags(data, 'Data');
 
     var isTrue = (grunt.util.kindOf(data.test) === 'function') ? data.test() : data.test;
-    var tasks = (grunt.util.kindOf(data.tasks) === 'string') ? [data.tasks] : data.tasks;
 
     if (isTrue) {
-      grunt.log.writeln(__(data.trueMessage));
-      grunt.task.run(tasks);
+      grunt.log.writeln(f(data.trueMessage));
     } else {
-      grunt.log.writeln(__(data.falseMessage));
+      grunt.warn(f(data.falseMessage), 0);
     }
 
   });

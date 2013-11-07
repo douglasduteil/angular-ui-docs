@@ -24,7 +24,7 @@ module.exports = function (grunt) {
     grunt.fatal("This grunt work require some attention. (delegatedConfig.js)");
     return;
   }
-  var config = require('../../delegatedConfig.js')(grunt);
+  var config = _.extend({ js_dependencies: [], css_dependencies: [], components: [] }, require('../../delegatedConfig.js')(grunt));
   var allowPushOnRepo = (process.env.TRAVIS == 'true') && (process.env.TRAVIS_PULL_REQUEST == 'false') && (process.env.TRAVIS_BRANCH == 'develop') && true;
 
   if (allowPushOnRepo){
@@ -65,13 +65,14 @@ module.exports = function (grunt) {
           {src: ['<%= dist %>/.tmpl/.travis.yml.tmpl'], dest: '<%= dist %>/dist/js/.travis.yml'}
         ]
       },
-      ghpagetravi:{
+      ghpagetravis: {
         options: {processContent: gtp},
         files: [
           {src: ['<%= dist %>/.tmpl/.travis.yml.tmpl'], dest: '<%= dist %>/.travis.yml'}
         ]
       }
     },
+
 
     iftrue: {
       'new-release': {
@@ -81,10 +82,10 @@ module.exports = function (grunt) {
           return sh.exec(cmd).code > 0;
         },
         trueMessage: "New release v<%= pkg.version %>.",
-        falseMessage: "Release v<%= pkg.version %> detected.",
-        tasks: ['copy:bowerfile', 'gitpublisher:bower']
+        falseMessage: "Release v<%= pkg.version %> detected."
       }
     },
+
 
     gitpublisher: {
       doc: {
@@ -95,8 +96,7 @@ module.exports = function (grunt) {
           repo :  process.env.REPO || false
         },
         cwd: "<%= dist %>",
-        src: [
-          'index.html', '.travis.yml']
+        src: ['index.html', '.travis.yml']
       },
       bower: {
         options: {
@@ -109,7 +109,10 @@ module.exports = function (grunt) {
         cwd: "<%= dist %>/dist/js",
         src: ['**/*', '.travis.yml']
       }
-    }
+    },
+
+
+    generateBowerComponents: config.components
   };
 
   var opts = _.extend(default_config, { meta : config });
@@ -121,8 +124,9 @@ module.exports = function (grunt) {
 
   grunt.registerTask('doc-building', ['copy:template']);
 
-  grunt.registerTask('doc-publishing', ['doc-building', 'copy:ghpagetravi','gitpublisher:doc']);
-  grunt.registerTask('bower-publishing', ['iftrue:new-release']);
+  grunt.registerTask('doc-publishing', ['doc-building', 'copy:ghpagetravis', 'gitpublisher:doc']);
+  grunt.registerTask('bower-publishing', ['iftrue:new-release', 'copy:bowerfile', 'gitpublisher:bower']);
+  grunt.registerTask('bower-components-publishing', ['iftrue:new-release', 'generateBowerComponents']);
 
 
   grunt.initConfig(opts);
