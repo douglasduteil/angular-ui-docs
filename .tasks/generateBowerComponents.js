@@ -49,24 +49,7 @@ module.exports = function (grunt) {
         //push: allowPushOnRepo,
         push: false,
         branch: 'bower-' + target + '-test',
-        tag: 'v<%= pkg.version %>',
-        message: 'v<%= pkg.version %> (bower-' + target + '-test-branch, build ' + process.env.TRAVIS_BUILD_NUMBER + ')'
-      },
-      // TODO Use a "real" tmp file
-      cwd: "<%= dist %>/dist/js",
-      src: ['**/*', '.travis.yml']
-    };
-    ntarget = {};
-    ntarget[property] = setup;
-    grunt.config('gitpublisher', ntarget);
-
-// Config concurrent
-    setup = {
-      options: {
-        //push: allowPushOnRepo,
-        push: false,
-        branch: 'bower-' + target + '-test',
-        tag: 'v<%= pkg.version %>',
+        tag: target + '-test-<%= pkg.version %>',
         message: 'v<%= pkg.version %> (bower-' + target + '-test-branch, build ' + process.env.TRAVIS_BUILD_NUMBER + ')'
       },
       // TODO Use a "real" tmp file
