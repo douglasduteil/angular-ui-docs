@@ -40,6 +40,7 @@ module.exports = function (grunt) {
 
     //TODO CHANGE REALLY NOT PRETTY WAY TO PICK IT...
     'MASTER_BRANCH' : "develop",
+    allowPushOnRepo : allowPushOnRepo,
 
 
     copy: {

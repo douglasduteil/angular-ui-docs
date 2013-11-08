@@ -46,8 +46,7 @@ module.exports = function (grunt) {
 // Config gitpublisher
     setup = {
       options: {
-        //push: allowPushOnRepo,
-        push: false,
+        push: !!grunt.config('allowPushOnRepo'),
         branch: 'bower-' + target + '-test',
         tag: target + '-test-<%= pkg.version %>',
         message: 'v<%= pkg.version %> (bower-' + target + '-test-branch, build ' + process.env.TRAVIS_BUILD_NUMBER + ')'
