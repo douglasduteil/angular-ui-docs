@@ -49,8 +49,7 @@ module.exports = function (grunt) {
           {src: ['<%= meta.view.repoName %>.js'], dest: '<%= dist %>/dist/js/<%= meta.view.repoName %>.js', filter: 'isFile'},
           {src: ['<%= dist %>/.tmpl/index.tmpl'], dest: '<%= dist %>/index.html'},
           {src: ['demo/demo.css'], dest: '<%= dist %>/assets/css/demo.css'}
-        ]
-          .concat(
+        ].concat(
             _.map(config.js_dependencies.concat(config.css_dependencies), function (f) {
               return {src: [f], dest: '<%= dist %>/' + f, filter: 'isFile'};
             }))
@@ -123,7 +122,6 @@ module.exports = function (grunt) {
   grunt.loadTasks(rrr + '/.tasks');
 
   grunt.registerTask('doc-building', ['copy:template']);
-
   grunt.registerTask('doc-publishing', ['doc-building', 'copy:ghpagetravis', 'gitpublisher:doc']);
   grunt.registerTask('bower-publishing', ['iftrue:new-release', 'copy:bowerfile', 'gitpublisher:bower']);
   grunt.registerTask('bower-components-publishing', ['iftrue:new-release', 'generateBowerComponents']);
