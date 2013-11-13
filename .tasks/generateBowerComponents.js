@@ -23,6 +23,8 @@ module.exports = function (grunt) {
 
     e("git push origin :<%= target %>-test-<%= version %>", {target: this.target, version: grunt.option('target') || "" })
 
+    if (grunt.option('nuke'))
+      e("git push origin :bower-<%= target %>-test", {target: this.target, version: grunt.option('target') || "" })
   });
 
   grunt.registerMultiTask('generateBowerComponents', 'Generate Bower Components', function () {
