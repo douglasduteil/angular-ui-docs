@@ -46,7 +46,11 @@ module.exports = function (grunt) {
     if (task) {
       grunt.log.subhead('==================\n\n' + task + ' delegated !');
 
-      initThenRun('grunt --gruntfile=DelegatedFile.js ' + task, function (fail) {
+      var parent_options = grunt.util._.reduce(grunt.option.flags(), function (memo, v) {
+        return memo += '--' + v + ' ';
+      }, ' ');
+
+      initThenRun('grunt --gruntfile=DelegatedFile.js ' + task + parent_options, function (fail) {
         if (fail){
           grunt.fail('Delegated grunt work done !');
         } else{
