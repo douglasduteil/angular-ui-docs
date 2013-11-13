@@ -11,8 +11,19 @@ module.exports = function (grunt) {
 
   // REQUIRED
 
-  var f = grunt.template.process;
+  var sh = require('shelljs'), f = grunt.template.process;
 
+  grunt.registerMultiTask('clearBowerComponents', 'Clear Bower Components', function () {
+
+    function e(cmd_tmpl, data) {
+      var cmd = f(cmd_tmpl, { data: data || {} });
+      grunt.log.writeln("$", cmd.cyan);
+      return sh.exec(cmd);
+    }
+
+    e("git push origin :<%= target %>-test-<%= version %>", {target: this.target, version: grunt.option('target') || "" })
+
+  });
 
   grunt.registerMultiTask('generateBowerComponents', 'Generate Bower Components', function () {
 

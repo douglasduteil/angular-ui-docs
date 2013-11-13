@@ -112,7 +112,8 @@ module.exports = function (grunt) {
     },
 
 
-    generateBowerComponents: config.components
+    generateBowerComponents: config.components,
+    clearBowerComponents: config.components
   };
 
   var opts = _.extend(default_config, { meta : config });
